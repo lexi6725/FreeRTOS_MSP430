@@ -1822,106 +1822,13 @@
         <name>$PROJ_DIR$\ParTest\ParTest.c</name>
       </file>
       <file>
-        <name>$PROJ_DIR$\serial\serial.c</name>
-      </file>
-      <file>
         <name>$PROJ_DIR$\serial\serialASM.s43</name>
       </file>
     </group>
     <group>
       <name>Dirvers</name>
       <file>
-        <name>$PROJ_DIR$\..\Common\Minimal\AltBlckQ.c</name>
-      </file>
-      <file>
-        <name>$PROJ_DIR$\..\Common\Minimal\AltBlock.c</name>
-      </file>
-      <file>
-        <name>$PROJ_DIR$\..\Common\Minimal\AltPollQ.c</name>
-      </file>
-      <file>
-        <name>$PROJ_DIR$\..\Common\Minimal\AltQTest.c</name>
-      </file>
-      <file>
-        <name>$PROJ_DIR$\..\Common\Minimal\BlockQ.c</name>
-      </file>
-      <file>
-        <name>$PROJ_DIR$\..\Common\Minimal\blocktim.c</name>
-      </file>
-      <file>
-        <name>$PROJ_DIR$\..\Common\Minimal\comtest.c</name>
-      </file>
-      <file>
-        <name>$PROJ_DIR$\..\Common\Minimal\comtest_strings.c</name>
-      </file>
-      <file>
-        <name>$PROJ_DIR$\..\Common\Minimal\countsem.c</name>
-      </file>
-      <file>
-        <name>$PROJ_DIR$\..\Common\Minimal\crflash.c</name>
-      </file>
-      <file>
-        <name>$PROJ_DIR$\..\Common\Minimal\crhook.c</name>
-      </file>
-      <file>
-        <name>$PROJ_DIR$\..\Common\Minimal\death.c</name>
-      </file>
-      <file>
-        <name>$PROJ_DIR$\..\Common\Minimal\dynamic.c</name>
-      </file>
-      <file>
-        <name>$PROJ_DIR$\..\Common\Minimal\EventGroupsDemo.c</name>
-      </file>
-      <file>
         <name>$PROJ_DIR$\..\Common\Minimal\flash.c</name>
-      </file>
-      <file>
-        <name>$PROJ_DIR$\..\Common\Minimal\flash_timer.c</name>
-      </file>
-      <file>
-        <name>$PROJ_DIR$\..\Common\Minimal\flop.c</name>
-      </file>
-      <file>
-        <name>$PROJ_DIR$\..\Common\Minimal\GenQTest.c</name>
-      </file>
-      <file>
-        <name>$PROJ_DIR$\..\Common\Minimal\integer.c</name>
-      </file>
-      <file>
-        <name>$PROJ_DIR$\..\Common\Minimal\IntQueue.c</name>
-      </file>
-      <file>
-        <name>$PROJ_DIR$\..\Common\Minimal\IntSemTest.c</name>
-      </file>
-      <file>
-        <name>$PROJ_DIR$\..\Common\Minimal\PollQ.c</name>
-      </file>
-      <file>
-        <name>$PROJ_DIR$\..\Common\Minimal\QPeek.c</name>
-      </file>
-      <file>
-        <name>$PROJ_DIR$\..\Common\Minimal\QueueOverwrite.c</name>
-      </file>
-      <file>
-        <name>$PROJ_DIR$\..\Common\Minimal\QueueSet.c</name>
-      </file>
-      <file>
-        <name>$PROJ_DIR$\..\Common\Minimal\QueueSetPolling.c</name>
-      </file>
-      <file>
-        <name>$PROJ_DIR$\..\Common\Minimal\recmutex.c</name>
-      </file>
-      <file>
-        <name>$PROJ_DIR$\..\Common\Minimal\semtest.c</name>
-      </file>
-      <file>
-        <name>$PROJ_DIR$\..\Common\Minimal\sp_flop.c</name>
-      </file>
-      <file>
-        <name>$PROJ_DIR$\..\Common\Minimal\TaskNotify.c</name>
-      </file>
-      <file>
-        <name>$PROJ_DIR$\..\Common\Minimal\TimerDemo.c</name>
       </file>
     </group>
   </group>

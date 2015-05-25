@@ -131,17 +131,19 @@ void vParTestInitialise( void )
 	/* Initialise the LCD hardware. */
 
 	/* Used for the onboard LED. */
-	P1DIR = 0x01;
+	P2DIR = 0xFF;
+	P2SEL = 0x00;
+	P2OUT = 0xFF;
 
 	// Setup Basic Timer for LCD operation
 	//BTCTL = (LCD_DIV_64+0x23);
 
 	// Setup port functions
-	P1SEL = 0x32;
-	P2SEL = 0x00;
-	P3SEL = 0x00;
-	P4SEL = 0xFC;
-	P5SEL = 0xFF;
+	//P1SEL = 0x32;
+	//P2SEL = 0x00;
+	//P3SEL = 0x00;
+	//P4SEL = 0xFC;
+	//P5SEL = 0xFF;
 	
 	/* Initialise all segments to off. */
 	/*LCDM1 = partstSEGMENTS_OFF;	
@@ -180,14 +182,12 @@ void vParTestSetLED( unsigned portBASE_TYPE uxLED, signed portBASE_TYPE xValue )
 			if( xValue )
 			{
 				/* Turn on the segments required to show the '*'. */
-				*( ucRHSSegments[ uxLED ] ) = partstSEGMENTS_ON;
-				*( ucLHSSegments[ uxLED ] ) = partstSEGMENTS_ON;
+				P2OUT	&= ~(1<<uxLED);
 			}
 			else
 			{
 				/* Turn off all the segments. */
-				*( ucRHSSegments[ uxLED ] ) = partstSEGMENTS_OFF;
-				*( ucLHSSegments[ uxLED ] ) = partstSEGMENTS_OFF;
+				P2OUT	|= (1<<uxLED);
 			}
 		}
 		xTaskResumeAll();
@@ -203,15 +203,13 @@ void vParTestToggleLED( unsigned portBASE_TYPE uxLED )
 		{
 			/* If the '*' is already showing - hide it.  If it is not already
 			showing then show it. */
-			if( *( ucRHSSegments[ uxLED ] ) )
+			if (P2OUT & (1<<uxLED))
 			{
-				*( ucRHSSegments[ uxLED ] ) = partstSEGMENTS_OFF;
-				*( ucLHSSegments[ uxLED ] ) = partstSEGMENTS_OFF;
+				P2OUT	&= ~(1<<uxLED);
 			}
 			else
 			{
-				*( ucRHSSegments[ uxLED ] ) = partstSEGMENTS_ON;
-				*( ucLHSSegments[ uxLED ] ) = partstSEGMENTS_ON;
+				P2OUT	|= (1<<uxLED);
 			}
 		}
 		xTaskResumeAll();

@@ -162,6 +162,7 @@ static void prvSetupHardware( void );
 portBASE_TYPE xLocalError = pdFALSE;
 volatile unsigned long ulIdleLoops = 0UL;
 
+extern void vPortSetupTimerInterrupt( void );
 /*-----------------------------------------------------------*/
 
 /*
@@ -175,12 +176,12 @@ int main( void )
 
 	/* Start the standard demo application tasks. */
 	vStartLEDFlashTasks( mainLED_TASK_PRIORITY );
-	vStartIntegerMathTasks( tskIDLE_PRIORITY );
-	vAltStartComTestTasks( mainCOM_TEST_PRIORITY, mainCOM_TEST_BAUD_RATE, mainCOM_TEST_LED - 1 );
-	vStartPolledQueueTasks( mainQUEUE_POLL_PRIORITY );
+	//vStartIntegerMathTasks( tskIDLE_PRIORITY );
+	//vAltStartComTestTasks( mainCOM_TEST_PRIORITY, mainCOM_TEST_BAUD_RATE, mainCOM_TEST_LED - 1 );
+	//vStartPolledQueueTasks( mainQUEUE_POLL_PRIORITY );
 
 	/* Start the 'Check' task which is defined in this file. */
-	xTaskCreate( vErrorChecks, "Check", configMINIMAL_STACK_SIZE, NULL, mainCHECK_TASK_PRIORITY, NULL );
+	//xTaskCreate( vErrorChecks, "Check", configMINIMAL_STACK_SIZE, NULL, mainCHECK_TASK_PRIORITY, NULL );
 
 	/* Start the scheduler. */
 	vTaskStartScheduler();
@@ -269,14 +270,17 @@ static void prvSetupHardware( void )
 	/* Stop the watchdog. */
 	WDTCTL = WDTPW + WDTHOLD;
 
-	/* Setup DCO+ for ( xtal * D * (N + 1) ) operation. */
-	//FLL_CTL0 |= DCOPLUS + XCAP18PF;
+	/* Setup XT2 To MCLK 8MHz */
+	volatile uint8_t i;
 
-	/* X2 DCO frequency, 8MHz nominal DCO */
-	//SCFI0 |= FN_4;
+	BCSCTL1	&= ~XT2OFF;
 
-	/* (121+1) x 32768 x 2 = 7.99 Mhz */
-	//SCFQCTL = mainMAX_FREQUENCY;
+	do{
+		IFG1 &= ~OFIFG;
+		for (i = 0xff; i > 0; --i);
+	}while(IFG1&OFIFG);
+
+	BCSCTL2 = SELM_2 + SELS;
 
 	/* Setup the IO.  This is just copied from the demo supplied by SoftBaugh
 	 for the ES449 demo board. */

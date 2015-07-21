@@ -57,7 +57,7 @@
         </option>
         <option>
           <name>DdfFileName</name>
-          <state>$TOOLKIT_DIR$\config\MSP430F149.ddf</state>
+          <state>$TOOLKIT_DIR$\config\CC430F5133.ddf</state>
         </option>
         <option>
           <name>ProcTMS</name>
@@ -203,7 +203,7 @@
         </option>
         <option>
           <name>CRadioProtocolType</name>
-          <state>0</state>
+          <state>1</state>
         </option>
         <option>
           <name>CCRadioModuleTypeSlave</name>

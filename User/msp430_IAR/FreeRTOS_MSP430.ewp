@@ -16,10 +16,6 @@
         <wantNonLocal>1</wantNonLocal>
         <debug>1</debug>
         <option>
-          <name>OGCore</name>
-          <state>0</state>
-        </option>
-        <option>
           <name>ExePath</name>
           <state>Debug\Exe</state>
         </option>
@@ -62,34 +58,38 @@
         </option>
         <option>
           <name>RTConfigPath</name>
-          <state>$TOOLKIT_DIR$\LIB\DLIB\dl430fn.h</state>
+          <state>$TOOLKIT_DIR$\LIB\DLIB\dl430xsfn.h</state>
         </option>
         <option>
           <name>RTLibraryPath</name>
-          <state>$TOOLKIT_DIR$\LIB\DLIB\dl430fn.r43</state>
+          <state>$TOOLKIT_DIR$\LIB\DLIB\dl430xsfn.r43</state>
         </option>
         <option>
           <name>Input variant</name>
           <version>0</version>
-          <state>1</state>
+          <state>0</state>
         </option>
         <option>
           <name>Input description</name>
-          <state>No specifier n, no float or long long.</state>
+          <state>Full formatting.</state>
         </option>
         <option>
           <name>Output variant</name>
           <version>0</version>
-          <state>1</state>
+          <state>0</state>
         </option>
         <option>
           <name>Output description</name>
-          <state>No specifier a or A.</state>
+          <state>Full formatting.</state>
         </option>
         <option>
           <name>GRuntimeLibSelectSlave</name>
           <version>0</version>
           <state>1</state>
+        </option>
+        <option>
+          <name>OGCore</name>
+          <state>0</state>
         </option>
         <option>
           <name>GeneralEnableMisra</name>
@@ -265,7 +265,7 @@
         </option>
         <option>
           <name>CCCompilerRuntimeInfo</name>
-          <state>1</state>
+          <state>0</state>
         </option>
         <option>
           <name>IDoubleSize</name>
@@ -276,16 +276,16 @@
           <state>$FILE_BNAME$.r43</state>
         </option>
         <option>
+          <name>CCLibConfigHeader</name>
+          <state>1</state>
+        </option>
+        <option>
           <name>OCCR4Utilize</name>
           <state>0</state>
         </option>
         <option>
           <name>OCCR5Utilize</name>
           <state>0</state>
-        </option>
-        <option>
-          <name>CCLibConfigHeader</name>
-          <state>1</state>
         </option>
         <option>
           <name>CPIC</name>
@@ -598,7 +598,7 @@
         </option>
         <option>
           <name>OutputFile</name>
-          <state>RTOSDemo.d43</state>
+          <state>FreeRTOS_MSP430.d43</state>
         </option>
         <option>
           <name>OutputFormat</name>
@@ -664,7 +664,7 @@
         </option>
         <option>
           <name>XclFile</name>
-          <state>$TOOLKIT_DIR$\CONFIG\lnk430F149.xcl</state>
+          <state>$TOOLKIT_DIR$\CONFIG\lnkCC430F5133.xcl</state>
         </option>
         <option>
           <name>XclFileSlave</name>
@@ -792,7 +792,7 @@
         </option>
         <option>
           <name>ExtraOutputFile</name>
-          <state>RTOSDemo.a43</state>
+          <state>FreeRTOS_MSP430.a43</state>
         </option>
         <option>
           <name>ExtraOutputFormat</name>
@@ -907,10 +907,6 @@
         <wantNonLocal>1</wantNonLocal>
         <debug>0</debug>
         <option>
-          <name>OGCore</name>
-          <state>0</state>
-        </option>
-        <option>
           <name>ExePath</name>
           <state>Release\Exe</state>
         </option>
@@ -945,42 +941,46 @@
         <option>
           <name>GRuntimeLibSelect</name>
           <version>0</version>
-          <state>4</state>
+          <state>1</state>
         </option>
         <option>
           <name>RTDescription</name>
-          <state>Use the legacy C runtime library.</state>
-        </option>
-        <option>
-          <name>RTConfigPath</name>
           <state></state>
         </option>
         <option>
+          <name>RTConfigPath</name>
+          <state>xxx.h</state>
+        </option>
+        <option>
           <name>RTLibraryPath</name>
-          <state>$TOOLKIT_DIR$\LIB\CLIB\cl430f.r43</state>
+          <state>xxx.r43</state>
         </option>
         <option>
           <name>Input variant</name>
           <version>0</version>
-          <state>1</state>
+          <state>0</state>
         </option>
         <option>
           <name>Input description</name>
-          <state>Full formatting.</state>
+          <state></state>
         </option>
         <option>
           <name>Output variant</name>
           <version>0</version>
-          <state>1</state>
+          <state>0</state>
         </option>
         <option>
           <name>Output description</name>
-          <state>Full formatting.</state>
+          <state></state>
         </option>
         <option>
           <name>GRuntimeLibSelectSlave</name>
           <version>0</version>
-          <state>4</state>
+          <state>1</state>
+        </option>
+        <option>
+          <name>OGCore</name>
+          <state>0</state>
         </option>
         <option>
           <name>GeneralEnableMisra</name>
@@ -992,7 +992,7 @@
         </option>
         <option>
           <name>OGChipSelectMenu</name>
-          <state>MSP430F149	MSP430F149</state>
+          <state></state>
         </option>
         <option>
           <name>GStackHeapOverride</name>
@@ -1000,11 +1000,11 @@
         </option>
         <option>
           <name>GStackSize2</name>
-          <state>80</state>
+          <state>###Uninitialized###</state>
         </option>
         <option>
           <name>GHeapSize2</name>
-          <state>80</state>
+          <state>###Uninitialized###</state>
         </option>
         <option>
           <name>RadioDataModelType</name>
@@ -1051,7 +1051,7 @@
         <debug>0</debug>
         <option>
           <name>CCDefines</name>
-          <state></state>
+          <state>NDEBUG</state>
         </option>
         <option>
           <name>CCPreprocFile</name>
@@ -1156,7 +1156,7 @@
         </option>
         <option>
           <name>CCCompilerRuntimeInfo</name>
-          <state>1</state>
+          <state>0</state>
         </option>
         <option>
           <name>IDoubleSize</name>
@@ -1164,7 +1164,11 @@
         </option>
         <option>
           <name>OutputFile</name>
-          <state>$FILE_BNAME$.r43</state>
+          <state></state>
+        </option>
+        <option>
+          <name>CCLibConfigHeader</name>
+          <state>1</state>
         </option>
         <option>
           <name>OCCR4Utilize</name>
@@ -1173,10 +1177,6 @@
         <option>
           <name>OCCR5Utilize</name>
           <state>0</state>
-        </option>
-        <option>
-          <name>CCLibConfigHeader</name>
-          <state>1</state>
         </option>
         <option>
           <name>CPIC</name>
@@ -1241,11 +1241,11 @@
         <option>
           <name>CCOptStrategy</name>
           <version>0</version>
-          <state>1</state>
+          <state>0</state>
         </option>
         <option>
           <name>CCOptLevelSlave</name>
-          <state>3</state>
+          <state>1</state>
         </option>
         <option>
           <name>CInput</name>
@@ -1483,7 +1483,7 @@
         </option>
         <option>
           <name>OutputFile</name>
-          <state>templproj.txt</state>
+          <state></state>
         </option>
         <option>
           <name>OutputFormat</name>
@@ -1497,7 +1497,7 @@
         </option>
         <option>
           <name>SecondaryOutputFile</name>
-          <state>(None for the selected format)</state>
+          <state></state>
         </option>
         <option>
           <name>XDefines</name>
@@ -1537,7 +1537,7 @@
         </option>
         <option>
           <name>XIncludes</name>
-          <state>$TOOLKIT_DIR$\LIB\</state>
+          <state>###Uninitialized###</state>
         </option>
         <option>
           <name>ModuleStatus</name>
@@ -1549,7 +1549,7 @@
         </option>
         <option>
           <name>XclFile</name>
-          <state>$TOOLKIT_DIR$\CONFIG\lnk430F149.xcl</state>
+          <state>lnk0t.xcl</state>
         </option>
         <option>
           <name>XclFileSlave</name>
@@ -1637,7 +1637,7 @@
         </option>
         <option>
           <name>xcProgramEntryLabel</name>
-          <state>__program_start</state>
+          <state></state>
         </option>
         <option>
           <name>DebugInformation</name>
@@ -1677,7 +1677,7 @@
         </option>
         <option>
           <name>ExtraOutputFile</name>
-          <state>templproj.a43</state>
+          <state></state>
         </option>
         <option>
           <name>ExtraOutputFormat</name>
@@ -1779,12 +1779,39 @@
     </settings>
   </configuration>
   <group>
-    <name>OS</name>
+    <name>App</name>
+    <file>
+      <name>$PROJ_DIR$\main.c</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\serial\serial.c</name>
+    </file>
+  </group>
+  <group>
+    <name>Drivers</name>
+    <file>
+      <name>$PROJ_DIR$\..\Common\Minimal\flash.c</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\Common\drivers\nrf24l01.c</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\ParTest\ParTest.c</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\serial\serialASM.s43</name>
+    </file>
+  </group>
+  <group>
+    <name>Kernel</name>
     <group>
-      <name>Portable</name>
+      <name>mem</name>
       <file>
         <name>$PROJ_DIR$\..\..\os\portable\MemMang\heap_1.c</name>
       </file>
+    </group>
+    <group>
+      <name>portable</name>
       <file>
         <name>$PROJ_DIR$\..\..\os\portable\MSP430\port.c</name>
       </file>
@@ -1810,27 +1837,6 @@
     <file>
       <name>$PROJ_DIR$\..\..\os\timers.c</name>
     </file>
-  </group>
-  <group>
-    <name>User</name>
-    <group>
-      <name>BSP</name>
-      <file>
-        <name>$PROJ_DIR$\main.c</name>
-      </file>
-      <file>
-        <name>$PROJ_DIR$\ParTest\ParTest.c</name>
-      </file>
-      <file>
-        <name>$PROJ_DIR$\serial\serialASM.s43</name>
-      </file>
-    </group>
-    <group>
-      <name>Dirvers</name>
-      <file>
-        <name>$PROJ_DIR$\..\Common\Minimal\flash.c</name>
-      </file>
-    </group>
   </group>
 </project>
 

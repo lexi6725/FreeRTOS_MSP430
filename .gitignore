@@ -22,7 +22,7 @@
 *.browse
 *.map
 *.d43
-*RTOSDemo.txt
+*FreeRTOS_MSP430.txt
 *.dep
 *.swp
 *.bak

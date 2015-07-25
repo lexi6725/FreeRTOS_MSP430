@@ -1,10 +1,14 @@
 #include "FreeRTOS.h"
 #include "Task.h"
+#include "event_groups.h"
+#include "portmacro.h"
 #include "nrf24l01.h"
 
-uint8_t nRF_Address[nRF_ADDR_WIDTH] = {0x59, 0x42, 0x67, 0x67, 0x92};
+uint8_t nRF_Address[nRF_ADDR_WIDTH] = {0x59, 0x12, 0x67, 0x67, 0x25};
+static uint8_t nRF_Init_Flag = 0;
+EventGroupHandle_t xEventGroup;
 
-void SPI1_Init(void)
+void nRF_Init(void)
 {
 	P4SEL	&= ~(BIT4 + BIT5);
 	P4DIR	|= (BIT4 + BIT5);
@@ -25,12 +29,17 @@ void SPI1_Init(void)
 	P5DIR	&= ~BIT1;
 
 	P1DIR	&= ~BIT4;		//P1.4 is IRQ Pin,  Data In
+	P1IES	|= BIT4;		// P1.4 High To Low trigger
+	P1IE	|= BIT4;
 
 	nRF_SCK_0;
 #endif
 
 	nRF_CE_0;
 	nRF_CSN_1;
+
+	if ((xEventGroup = xEventGroupCreate()) != NULL)
+		nRF_Init_Flag = 1;
 }
 
 void mosi_pin(uint8_t state)
@@ -117,6 +126,9 @@ uint8_t nrf_write_buf(uint8_t reg, uint8_t *pBuf, uint8_t len)
 
 void nrf_rx_mode(void)
 {
+	if (nRF_Init_Flag == 0)
+		nRF_Init();
+		
 	nRF_CE_0;	
 	nrf_write_buf(WRITE_REG+TX_ADDR, nRF_Address, nRF_ADDR_WIDTH);
 	nrf_write_buf(WRITE_REG+RX_ADDR_P0, nRF_Address, nRF_ADDR_WIDTH);
@@ -133,6 +145,9 @@ void nrf_rx_mode(void)
 
 void nrf_tx_mode(void)
 {
+	if (nRF_Init_Flag == 0)
+		nRF_Init();
+		
 	/*!< Select the nRF: Chip Select low */
 	nRF_CE_0;
 
@@ -154,9 +169,11 @@ void nrf_tx_mode(void)
 
 uint8_t nrf_start_tx(uint8_t *pbuf, uint8_t len)
 {
-	uint8_t status;
+	//uint8_t status;
 	uint16_t timeout = 1;
 	uint8_t retvalue = 0;
+	BaseType_t uxBits;
+	const TickType_t xTicksToWait = 3;
 
 	nrf_tx_mode();
 	
@@ -167,7 +184,7 @@ uint8_t nrf_start_tx(uint8_t *pbuf, uint8_t len)
 
 	nRF_CE_1;
 
-	while((nRF_IRQ()))
+	/*while((nRF_IRQ()))
 	{
 		if (timeout-- == 0)
 			return TIMEOUT;
@@ -175,13 +192,16 @@ uint8_t nrf_start_tx(uint8_t *pbuf, uint8_t len)
 	}
 
 	status = nrf_read_byte(STATUS);
-	nrf_rw_reg(WRITE_REG+STATUS, 0xFF);
+	nrf_rw_reg(WRITE_REG+STATUS, 0xFF);*/
+	uxBits = xEventGroupWaitBits(xEventGroup, nRF_State_TX_OK|nRF_State_TX_MAX, pdTRUE, pdFALSE, xTicksToWait);
 
-	if (status & TX_OK)
+	//if (status & TX_OK)
+	if (uxBits & nRF_State_TX_OK)
 	{
 		retvalue = TX_OK;
 	}
-	else if (status & MAX_TX)
+	//else if (status & MAX_TX)
+	else if (uxBits & nRF_State_TX_MAX)
 	{
 		retvalue = MAX_TX;
 	}
@@ -198,10 +218,13 @@ uint8_t nrf_start_tx(uint8_t *pbuf, uint8_t len)
 uint8_t nrf_start_rx(uint8_t *pbuf, uint8_t len)
 {
 	uint8_t status;
+	BaseType_t uxBits;
 	uint16_t timeout = 1;
 	uint8_t retvalue = 0;
+	const TickType_t xTickToWait = 1000;
 
-	while((nRF_IRQ()))
+	uxBits = xEventGroupWaitBits(xEventGroup, nRF_State_RX_OK, pdTRUE, pdFALSE, xTickToWait);
+	/*while((nRF_IRQ()))
 	{
 		if (timeout-- == 0)
 			return TIMEOUT;
@@ -209,9 +232,10 @@ uint8_t nrf_start_rx(uint8_t *pbuf, uint8_t len)
 	}
 
 	status = nrf_read_byte(STATUS);
-	nrf_rw_reg(WRITE_REG+STATUS, 0xFF);
+	nrf_rw_reg(WRITE_REG+STATUS, 0xFF);*/
 
-	if (status & RX_OK)
+	//if (status & RX_OK)
+	if (uxBits & nRF_State_RX_OK)
 	{
 		nRF_CE_0;
 		nrf_read_buf(RD_RX_PLOAD, pbuf, len);
@@ -222,5 +246,47 @@ uint8_t nrf_start_rx(uint8_t *pbuf, uint8_t len)
 	else
 		retvalue = TIMEOUT;
 
+	nRF_CE_0;
+	nrf_rw_reg(FLUSH_RX, 0xFF);
+	nRF_CE_1;
+
 	return retvalue;
+}
+
+void nrf_isr(void)
+{
+	BaseType_t xResult, xHigherPriorityTaskWoken;
+	uint8_t RegValue;
+
+	RegValue = nrf_read_byte(STATUS);
+	nrf_rw_reg(WRITE_REG+STATUS, 0xff);
+
+	xHigherPriorityTaskWoken = pdFALSE;
+
+	if (RegValue & TX_OK)
+	{
+		xResult = xEventGroupSetBitsFromISR(xEventGroup, nRF_State_TX_OK, &xHigherPriorityTaskWoken);
+	}
+	else if (RegValue & MAX_TX)
+	{
+		xResult = xEventGroupSetBitsFromISR(xEventGroup, nRF_State_TX_MAX, &xHigherPriorityTaskWoken);
+	}
+	if (RegValue & RX_OK)
+	{
+		xResult = xEventGroupSetBitsFromISR(xEventGroup, nRF_State_RX_OK, &xHigherPriorityTaskWoken);
+	}
+
+	if (xResult != pdFAIL)
+	{
+		portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+	}
+}
+
+#pragma vector=PORT1_VECTOR
+__interrupt void Port1_ISR(void)
+{
+	if (P1IFG & BIT4)
+		nrf_isr();
+
+	P1IFG = 0;
 }

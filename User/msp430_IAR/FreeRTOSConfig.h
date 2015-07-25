@@ -133,6 +133,11 @@ occurs.
 #define configUSE_CO_ROUTINES 		0
 #define configMAX_CO_ROUTINE_PRIORITIES ( 2 )
 
+#define configUSE_TIMERS				1
+#define configTIMER_TASK_PRIORITY		( 2 )
+#define configTIMER_QUEUE_LENGTH		10
+#define configTIMER_TASK_STACK_DEPTH	( configMINIMAL_STACK_SIZE )
+
 /* Set the following definitions to 1 to include the API function, or zero
 to exclude the API function. */
 
@@ -144,5 +149,7 @@ to exclude the API function. */
 #define INCLUDE_vTaskDelayUntil				1
 #define INCLUDE_vTaskDelay					1
 #define INCLUDE_uxTaskGetStackHighWaterMark 0
+#define INCLUDE_xEventGroupSetBitFromISR	1
+#define INCLUDE_xTimerPendFunctionCall		1
 
 #endif /* FREERTOS_CONFIG_H */

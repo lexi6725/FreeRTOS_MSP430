@@ -58,11 +58,11 @@
         </option>
         <option>
           <name>RTConfigPath</name>
-          <state>$TOOLKIT_DIR$\LIB\DLIB\dl430xsfn.h</state>
+          <state>$TOOLKIT_DIR$\LIB\DLIB\dl430fn.h</state>
         </option>
         <option>
           <name>RTLibraryPath</name>
-          <state>$TOOLKIT_DIR$\LIB\DLIB\dl430xsfn.r43</state>
+          <state>$TOOLKIT_DIR$\LIB\DLIB\dl430fn.r43</state>
         </option>
         <option>
           <name>Input variant</name>
@@ -320,7 +320,7 @@
           <state>$PROJ_DIR$\</state>
           <state>$PROJ_DIR$\..\Common\include</state>
           <state>$PROJ_DIR$\..\..\os\include</state>
-          <state>$PROJ_DIR$\..\..\os\portable\MSP430</state>
+          <state>$PROJ_DIR$\..\..\os\portable\MSP430X</state>
         </option>
         <option>
           <name>CCStdIncCheck</name>
@@ -560,7 +560,7 @@
           <state>$PROJ_DIR$\</state>
           <state>$PROJ_DIR$\..\Common\include</state>
           <state>$PROJ_DIR$\..\..\os\include</state>
-          <state>$PROJ_DIR$\..\..\os\portable\MSP430</state>
+          <state>$PROJ_DIR$\..\..\os\portable\MSP430X</state>
         </option>
       </data>
     </settings>
@@ -664,7 +664,7 @@
         </option>
         <option>
           <name>XclFile</name>
-          <state>$TOOLKIT_DIR$\CONFIG\lnkCC430F5133.xcl</state>
+          <state>$TOOLKIT_DIR$\CONFIG\lnk430F149.xcl</state>
         </option>
         <option>
           <name>XclFileSlave</name>
@@ -1797,6 +1797,9 @@
     </file>
     <file>
       <name>$PROJ_DIR$\ParTest\ParTest.c</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\Common\drivers\pwm.c</name>
     </file>
     <file>
       <name>$PROJ_DIR$\serial\serialASM.s43</name>

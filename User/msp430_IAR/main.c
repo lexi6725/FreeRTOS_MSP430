@@ -104,10 +104,12 @@
 #include "partest.h"
 #include "flash.h"
 #include "comtest2.h"
-
+#include "pwm.h"
+#include "nrf24l01.h"
 
 /* Demo task priorities. */
 #define mainLED_TASK_PRIORITY			( tskIDLE_PRIORITY + 1 )
+#define mainComm_TASK_PRIORITY			( tskIDLE_PRIORITY + 2 )
 
 /* The constants used in the calculation. */
 #define intgCONST1				( ( long ) 123 )
@@ -127,6 +129,7 @@ volatile unsigned long ulIdleLoops = 0UL;
 
 extern void vPortSetupTimerInterrupt( void );
 /*-----------------------------------------------------------*/
+static portTASK_FUNCTION_PROTO( vCommTask, pvParameters );
 
 /*
  * Start the demo application tasks - then start the real time scheduler.
@@ -134,11 +137,13 @@ extern void vPortSetupTimerInterrupt( void );
 int main( void )
 {
 	/* Setup the hardware ready for the demo. */
-	prvSetupHardware();
+	prvSetupHardware();                                                                                                                                                                           
 	vParTestInitialise();
+	Init_PWM();
 
 	/* Start the standard demo application tasks. */
 	vStartLEDFlashTasks( mainLED_TASK_PRIORITY );
+	xTaskCreate( vCommTask, "nRF", configMINIMAL_STACK_SIZE*2, NULL, mainComm_TASK_PRIORITY, ( TaskHandle_t * ) NULL );
 
 	/* Start the scheduler. */
 	vTaskStartScheduler();
@@ -149,6 +154,66 @@ int main( void )
 }
 /*-----------------------------------------------------------*/
 
+void CommProcess(uint8_t *buf)
+{
+	if (buf[0] != 0x01)
+		return;
+
+	if ((buf[1] & KEY_SPD_RDC) == KEY_SPD_RDC)
+	{
+		ControlProcess(CMD_RDU_RATE);
+	}
+	else if ((buf[1] & KEY_SPD_ADD) == KEY_SPD_ADD)
+	{
+		ControlProcess(CMD_ADD_RATE);
+	}
+	else if ((buf[1] & KEY_UP) == KEY_UP)
+	{
+		ControlProcess(CMD_DIR_FRONT);
+	}
+	else if ((buf[1] & KEY_DOWN) == KEY_DOWN)
+	{
+		ControlProcess(CMD_DIR_BACK);
+	}
+	else if ((buf[1] & KEY_LEFT) == KEY_LEFT)
+	{
+		ControlProcess(CMD_DIR_LEFT);
+	}
+	else if ((buf[1] & KEY_RIGHT) == KEY_RIGHT)
+	{
+		ControlProcess(CMD_DIR_RIGHT);
+	}
+	else if ((buf[1] & KEY_BRK) == KEY_BRK)
+	{
+		ControlProcess(CMD_STOP);
+	}
+}
+
+static portTASK_FUNCTION( vCommTask, pvParameters )
+{
+	uint8_t buf[nRF_PLOAD_WIDTH];
+	(void)pvParameters;
+
+	nRF_Init();
+
+	nrf_rx_mode();
+	vTaskDelay(1);
+	
+	for(;;)
+	{
+		if (nrf_start_rx(buf, nRF_PLOAD_WIDTH) == RX_OK)
+		{
+			vParTestToggleLED(3);
+			CommProcess(buf);
+			buf[0] |= 0x80;
+			if (nrf_start_tx(buf, nRF_PLOAD_WIDTH) == TX_OK)
+			{
+				vParTestToggleLED(4);
+			}
+		}
+		memset(buf, 0, nRF_PLOAD_WIDTH);
+	}
+}
 
 static void prvSetupHardware( void )
 {
@@ -169,11 +234,11 @@ static void prvSetupHardware( void )
 
 	/* Setup the IO.  This is just copied from the demo supplied by SoftBaugh
 	 for the ES449 demo board. */
-	P1SEL = 0x32;
+	/*P1SEL = 0x32;
 	P2SEL = 0x00;
 	P3SEL = 0x00;
 	P4SEL = 0xFC;
-	P5SEL = 0xFF;
+	P5SEL = 0xFF;*/
 }
 /*-----------------------------------------------------------*/
 

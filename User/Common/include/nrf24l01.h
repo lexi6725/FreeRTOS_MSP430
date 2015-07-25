@@ -67,11 +67,19 @@
 
 #define TIMEOUT		0x01
 
-void SPI1_Init(void);
+
+/* nRF24L01 Event Bit Map */
+#define nRF_State_TX_OK		(0x01<<1)		// 1. 发送数据成功
+#define nRF_State_TX_MAX	(0x01<<2)		// 1. 发送数据最大次数
+#define nRF_State_RX_OK		(0x01<<3)		// 1. 接收数据成功
+
+
+void nRF_Init(void);
 void nrf_tx_mode(void);
 void nrf_rx_mode(void);
 uint8_t nrf_start_tx(uint8_t *pbuf, uint8_t len);
 uint8_t nrf_start_rx(uint8_t *pbuf, uint8_t len);
+void nrf_isr(void);
 
 
 #endif

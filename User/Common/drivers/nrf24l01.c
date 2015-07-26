@@ -169,8 +169,6 @@ void nrf_tx_mode(void)
 
 uint8_t nrf_start_tx(uint8_t *pbuf, uint8_t len)
 {
-	//uint8_t status;
-	uint16_t timeout = 1;
 	uint8_t retvalue = 0;
 	BaseType_t uxBits;
 	const TickType_t xTicksToWait = 3;
@@ -184,23 +182,12 @@ uint8_t nrf_start_tx(uint8_t *pbuf, uint8_t len)
 
 	nRF_CE_1;
 
-	/*while((nRF_IRQ()))
-	{
-		if (timeout-- == 0)
-			return TIMEOUT;
-		vTaskDelay(1);
-	}
-
-	status = nrf_read_byte(STATUS);
-	nrf_rw_reg(WRITE_REG+STATUS, 0xFF);*/
 	uxBits = xEventGroupWaitBits(xEventGroup, nRF_State_TX_OK|nRF_State_TX_MAX, pdTRUE, pdFALSE, xTicksToWait);
 
-	//if (status & TX_OK)
 	if (uxBits & nRF_State_TX_OK)
 	{
 		retvalue = TX_OK;
 	}
-	//else if (status & MAX_TX)
 	else if (uxBits & nRF_State_TX_MAX)
 	{
 		retvalue = MAX_TX;
@@ -217,24 +204,12 @@ uint8_t nrf_start_tx(uint8_t *pbuf, uint8_t len)
 
 uint8_t nrf_start_rx(uint8_t *pbuf, uint8_t len)
 {
-	uint8_t status;
 	BaseType_t uxBits;
-	uint16_t timeout = 1;
 	uint8_t retvalue = 0;
 	const TickType_t xTickToWait = 1000;
 
 	uxBits = xEventGroupWaitBits(xEventGroup, nRF_State_RX_OK, pdTRUE, pdFALSE, xTickToWait);
-	/*while((nRF_IRQ()))
-	{
-		if (timeout-- == 0)
-			return TIMEOUT;
-		vTaskDelay(1);
-	}
 
-	status = nrf_read_byte(STATUS);
-	nrf_rw_reg(WRITE_REG+STATUS, 0xFF);*/
-
-	//if (status & RX_OK)
 	if (uxBits & nRF_State_RX_OK)
 	{
 		nRF_CE_0;

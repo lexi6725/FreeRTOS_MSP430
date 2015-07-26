@@ -1,7 +1,7 @@
 #include "FreeRTOS.h"
 #include "pwm.h"
 
-static uint8_t const RotateShift[2] = {0, 3};
+static uint8_t PWM_Flag = 0;
 
 void Init_PWM(void)
 {
@@ -18,18 +18,27 @@ void Init_PWM(void)
 	TBCCR1	= CONFIG_DEFAULT_PWM_RATE%PWM_MAX_RATE;
 	TBCCR2	= CONFIG_DEFAULT_PWM_RATE%PWM_MAX_RATE;
 	TBCCR0	= PWM_MAX_RATE;						// 50uS = 20KHz
+}
+
+void Enable_PWM(void)
+{
 	TBCTL	|= TASSEL_2+ID_3+TBCLR+MC_1;			// SMCLK/div8 and Up Mode 
+	PWM_Flag = 1;
+}
+
+void Disable_PWM(void)
+{
+	TBCTL	= 0|TBCLR;
+	PWM_Flag = 0;
 }
 
 void ChangeRate(uint8_t rate)
 {
-	if (!IsPwmRate(rate)/*||!IsRotate(rotate)*/)
+	if (!IsPwmRate(rate))
 		return;
 
-	//if (rotate & Rotate_Left)
-		TBCCR1	= rate;
-	//if (rotate & Rotate_Right)
-		TBCCR2	= rate;
+	TBCCR1	= rate%(PWM_MAX_RATE+1);
+	TBCCR2	= rate%(PWM_MAX_RATE+1);
 }
 
 uint8_t GetRate(void)
@@ -40,10 +49,12 @@ uint8_t GetRate(void)
 void ChangeDirs(uint8_t dirs)
 {
 	uint8_t dir = P6OUT;
-	uint8_t position;
 	
 	if (!IsDirs(dirs))
 		return;
+
+	if ((dirs != DirStop) && (PWM_Flag == 0))
+		Enable_PWM();
 	
 	P6OUT &= ~DirMask;
 
@@ -62,6 +73,7 @@ void ChangeDirs(uint8_t dirs)
 			P6OUT	|= 0x21;
 			break;
 		case DirStop:
+			Disable_PWM();
 			P6OUT	&= ~DirMask;
 			break;
 		default:

@@ -27,7 +27,7 @@
 #define CONFIG_DEFAULT_PWM_RATE	30
 #define PWM_MAX_RATE			50
 
-#define IsPwmRate(x)		((x) <= PWM_MAX_RATE)
+#define IsPwmRate(x)		((x) < PWM_MAX_RATE && (x) > 0)
 
 #define DirPortOut()		P6SEL &= 0x0F ; P6DIR	|= 0x0F
 

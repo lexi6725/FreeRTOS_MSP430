@@ -95,19 +95,20 @@
 
 /* Standard includes. */
 #include <stdlib.h>
+#include <string.h>
 
 /* Scheduler includes. */
 #include "FreeRTOS.h"
 #include "task.h"
 
-/* Demo application includes. */
+/* application includes. */
 #include "partest.h"
 #include "flash.h"
 #include "comtest2.h"
 #include "pwm.h"
 #include "nrf24l01.h"
 
-/* Demo task priorities. */
+/* App task priorities. */
 #define mainLED_TASK_PRIORITY			( tskIDLE_PRIORITY + 1 )
 #define mainComm_TASK_PRIORITY			( tskIDLE_PRIORITY + 2 )
 

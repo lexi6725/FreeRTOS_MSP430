@@ -7,6 +7,7 @@
 uint8_t nRF_Address[nRF_ADDR_WIDTH] = {0x59, 0x12, 0x67, 0x67, 0x25};
 static uint8_t nRF_Init_Flag = 0;
 EventGroupHandle_t xEventGroup;
+//#define HW_SPI
 
 void nRF_Init(void)
 {
@@ -14,26 +15,30 @@ void nRF_Init(void)
 	P4DIR	|= (BIT4 + BIT5);
 	
 #if defined(HW_SPI)
+	P5DIR	|= (BIT2+BIT3);
+	P5DIR	&= ~BIT1;
 	P5SEL	|= (BIT1+BIT2+BIT3);
 	U1CTL	= CHAR + SYNC + MM + SWRST;
 	U1TCTL	= SSEL1 + STC;
-	U1BR0	= 0x02;
+	U1BR0	= 0x04;
 	U1BR1	= 0x00;
 	U1MCTL	= 0x00;
 	ME2		|= USPIE1;
 	U1CTL	&= ~SWRST;
-	IE2		|= URXIE1 + UTXIE1;
+	//IE2		|= URXIE1 + UTXIE1;
+	IFG2 	&= ~(UTXIFG1+URXIFG1);
+	vTaskDelay(1);
 #else
 	P5SEL	&= ~(BIT1+BIT2+BIT3);
 	P5DIR	|= (BIT2+BIT3);
 	P5DIR	&= ~BIT1;
 
-	P1DIR	&= ~BIT4;		//P1.4 is IRQ Pin,  Data In
-	P1IES	|= BIT4;		// P1.4 High To Low trigger
-	P1IE	|= BIT4;
 
 	nRF_SCK_0;
 #endif
+	P1DIR	&= ~BIT4;		//P1.4 is IRQ Pin,  Data In
+	P1IES	|= BIT4;		// P1.4 High To Low trigger
+	P1IE	|= BIT4;
 
 	nRF_CE_0;
 	nRF_CSN_1;
@@ -57,6 +62,25 @@ uint8_t miso_pin(void)
 
 uint8_t spi_rw(uint8_t byte)
 {
+#if defined(HW_SPI)
+	uint8_t timeout = 0xFF;
+	U1TXBUF = byte;
+	while(timeout--)
+	{
+		if (IFG2&UTXIFG1)
+			break;
+	}
+
+	timeout = 0xFF;
+	while(timeout--)
+	{
+		if (IFG2&URXIFG1)
+			break;
+	}
+
+	byte = U1RXBUF;
+	IFG2 	&= ~(UTXIFG1+URXIFG1);
+#else
 	uint8_t bit;
 
 	for (bit = 0; bit < 8; bit++)
@@ -67,6 +91,7 @@ uint8_t spi_rw(uint8_t byte)
 		byte	|= miso_pin();
 		nRF_SCK_0;
 	}
+#endif
 	return byte;
 }
 
@@ -214,7 +239,6 @@ uint8_t nrf_start_rx(uint8_t *pbuf, uint8_t len)
 	{
 		nRF_CE_0;
 		nrf_read_buf(RD_RX_PLOAD, pbuf, len);
-		nrf_rw_reg(FLUSH_RX, 0xFF);
 		nRF_CE_1;
 		retvalue = RX_OK;
 	}
@@ -223,6 +247,7 @@ uint8_t nrf_start_rx(uint8_t *pbuf, uint8_t len)
 
 	nRF_CE_0;
 	nrf_rw_reg(FLUSH_RX, 0xFF);
+	nrf_rw_reg(WRITE_REG+STATUS, 0xFF);
 	nRF_CE_1;
 
 	return retvalue;

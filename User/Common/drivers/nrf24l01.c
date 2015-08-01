@@ -4,10 +4,10 @@
 #include "portmacro.h"
 #include "nrf24l01.h"
 
-uint8_t nRF_Address[nRF_ADDR_WIDTH] = {0x59, 0x12, 0x67, 0x67, 0x25};
+static uint8_t nRF_Address[nRF_ADDR_WIDTH] = {0x59, 0x12, 0x67, 0x67, 0x25};
 static uint8_t nRF_Init_Flag = 0;
 EventGroupHandle_t xEventGroup;
-//#define HW_SPI
+#define HW_SPI
 
 void nRF_Init(void)
 {
@@ -20,7 +20,7 @@ void nRF_Init(void)
 	P5SEL	|= (BIT1+BIT2+BIT3);
 	U1CTL	= CHAR + SYNC + MM + SWRST;
 	U1TCTL	= SSEL1 + STC;
-	U1BR0	= 0x04;
+	U1BR0	= 0x02;
 	U1BR1	= 0x00;
 	U1MCTL	= 0x00;
 	ME2		|= USPIE1;
@@ -47,6 +47,7 @@ void nRF_Init(void)
 		nRF_Init_Flag = 1;
 }
 
+#if !defined(HW_SPI)
 void mosi_pin(uint8_t state)
 {
 	if (state)
@@ -59,22 +60,17 @@ uint8_t miso_pin(void)
 {
 	return nRF_MISO_IN();
 }
+#endif
 
 uint8_t spi_rw(uint8_t byte)
 {
 #if defined(HW_SPI)
 	uint8_t timeout = 0xFF;
 	U1TXBUF = byte;
+	
 	while(timeout--)
 	{
-		if (IFG2&UTXIFG1)
-			break;
-	}
-
-	timeout = 0xFF;
-	while(timeout--)
-	{
-		if (IFG2&URXIFG1)
+		if (IFG2&URXIFG1)	// wait Recevier Data
 			break;
 	}
 
@@ -246,7 +242,6 @@ uint8_t nrf_start_rx(uint8_t *pbuf, uint8_t len)
 		retvalue = TIMEOUT;
 
 	nRF_CE_0;
-	nrf_rw_reg(FLUSH_RX, 0xFF);
 	nrf_rw_reg(WRITE_REG+STATUS, 0xFF);
 	nRF_CE_1;
 

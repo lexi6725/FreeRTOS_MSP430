@@ -207,10 +207,8 @@ static portTASK_FUNCTION( vCommTask, pvParameters )
 			vParTestToggleLED(3);
 			CommProcess(buf);
 			buf[0] |= 0x80;
-			if (nrf_start_tx(buf, nRF_PLOAD_WIDTH) == TX_OK)
-			{
-				vParTestToggleLED(4);
-			}
+			nrf_start_tx(buf, nRF_PLOAD_WIDTH);
+			vParTestToggleLED(3);
 		}
 		memset(buf, 0, nRF_PLOAD_WIDTH);
 	}

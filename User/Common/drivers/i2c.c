@@ -8,9 +8,9 @@ void I2C_Init(void)
 	if (!(I2C_Status & I2C_FLAG_INIT))
 	{
 		I2C_SDA_IN;
-		I2C_SCL_OUT;
+		I2C_SCL_IN;
 		I2C_SDA_0;
-		I2C_SCL_1;
+		I2C_SCL_0;
 		I2C_Status |= I2C_FLAG_INIT;
 	}
 }
@@ -18,72 +18,51 @@ void I2C_Init(void)
 void I2C_Start(void)
 {
 	I2C_SDA_IN;
-	I2C_SCL_1;
-	Delay(2);
+	I2C_SCL_IN;
+	Delay(1);
 	I2C_SDA_OUT;
-	Delay(2);
-	I2C_SCL_0;
+	Delay(1);
+	I2C_SCL_OUT;
 }
 
 void I2C_Stop(void)
 {
 	I2C_SDA_OUT;
-	I2C_SCL_1;
-	Delay(2);
-	I2C_SDA_IN;
-	Delay(2);
-}
-
-/*
- * 0: ACK   1:NAK
-*/
-void I2C_SendAck(uint8_t ack)
-{
-	if (ack)
-		I2C_SDA_IN;
-	else
-		I2C_SDA_OUT;
-
-	I2C_SCL_1;
-	Delay(2);
-	I2C_SCL_0;
-}
-
-uint8_t I2C_RecvAck(void)
-{
-	uint8_t retValue = 0;
-
-	I2C_SDA_IN;
-	I2C_SCL_1;
+	I2C_SCL_IN;
 	Delay(1);
-	retValue = I2C_SDA;
-	Delay(2);
-	I2C_SCL_0;
-	
-	return retValue;
+	I2C_SDA_IN;
+	Delay(1);
 }
 
 void I2C_WriteByte(uint8_t data)
 {
 	uint8_t index;
+	uint8_t timeout = 0x20;
 
-	I2C_SDA_OUT;
+	//I2C_SDA_OUT;
 	for (index = 0; index < 8; index++)
 	{
-		if ((data<<index) & 0x80)
+		if (data & 0x80)
 			I2C_SDA_IN;
 		else
 			I2C_SDA_OUT;
 
-		I2C_SCL_1;
-		Delay(2);
-		I2C_SCL_0;
-		Delay(1);
+		I2C_SCL_IN;
+		data<<=1;
+		I2C_SCL_OUT;
 	}
-	Delay(5);
+
+	I2C_SDA_IN;
+	I2C_SCL_IN;
+	while(timeout--)
+	{
+		if (!(I2C_SDA))
+			break;
+	}
+	I2C_SCL_OUT;
 }
 
-uint8_t I2C_ReadByte(void)
+uint8_t I2C_ReadByte(uint8_t ack)
 {
 	uint8_t data = 0;
 	uint8_t index;
@@ -93,14 +72,18 @@ uint8_t I2C_ReadByte(void)
 	for (index = 0; index < 8; index++)
 	{
 		data <<= 0x01;
-		I2C_SCL_1;
-		Delay(2);
+		I2C_SCL_IN;
 		if (I2C_SDA)
 			data |= 0x01;
-		I2C_SCL_0;
-		Delay(1);
+		I2C_SCL_OUT;
 	}
-	Delay(5);
+
+	if (ack == 0)
+		I2C_SDA_OUT;
+		
+	I2C_SCL_IN;
+	Delay(1);
+	I2C_SCL_OUT;
 
 	return data;
 }
@@ -111,24 +94,18 @@ uint8_t I2C_Read(uint8_t devaddr, uint8_t dstaddr, uint8_t *data, uint8_t datele
 	
 	I2C_Start();
 	I2C_WriteByte(devaddr);
-	I2C_RecvAck();
 	I2C_WriteByte(dstaddr);
-	I2C_RecvAck();
 
 	I2C_Start();
 	I2C_WriteByte(devaddr|0x01);
-	I2C_RecvAck();
-	for (index = 0; index < datelen; ++index)
+	for (index = 0; index < datelen-1; ++index)
 	{
-		data[index] = I2C_ReadByte();
-		if (index == (datelen-1))
-			I2C_SendAck(1);
-		else
-			I2C_SendAck(0);
+		data[index] = I2C_ReadByte(0);
 	}
 
+	data[index] = I2C_ReadByte(1);
+
 	I2C_Stop();
-	Delay(5);
 
 	return 0;
 }
@@ -139,18 +116,14 @@ uint8_t I2C_Write(uint8_t devaddr, uint8_t dstaddr, uint8_t *data, uint8_t datel
 
 	I2C_Start();
 	I2C_WriteByte(devaddr);
-	I2C_RecvAck();
 	I2C_WriteByte(dstaddr);
-	I2C_RecvAck();
 
 	for (index = 0; index < datelen; ++index)
 	{
 		I2C_WriteByte(data[index]);
-		I2C_RecvAck();
 	}
 
 	I2C_Stop();
-	Delay(5);
 
 	return 0;
 }

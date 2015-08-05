@@ -120,7 +120,7 @@ occurs.
 #define configCPU_CLOCK_HZ			( ( unsigned long ) 8000000 ) /* Clock setup from main.c in the demo application. */
 #define configTICK_RATE_HZ			( ( TickType_t ) 1000 )
 #define configMAX_PRIORITIES		( 4 )
-#define configMINIMAL_STACK_SIZE	( ( unsigned short ) 30 )
+#define configMINIMAL_STACK_SIZE	( ( unsigned short ) 40 )
 #define configTOTAL_HEAP_SIZE		( ( size_t ) ( 1500 ) )
 #define configMAX_TASK_NAME_LEN		( 8 )
 #define configUSE_TRACE_FACILITY	0

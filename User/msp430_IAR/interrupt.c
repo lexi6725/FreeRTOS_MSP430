@@ -10,7 +10,9 @@ __interrupt void Port1_ISR(void)
 		nrf_isr();
 	if (P1IFG & BIT5)
 		HMC_ISR();
-
+	if (P1IFG & BIT6)
+		MPU9050_ISR();
+		
 	P1IFG = 0;
 }
 

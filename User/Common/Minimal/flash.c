@@ -91,7 +91,7 @@
 #include "partest.h"
 #include "flash.h"
 
-#define ledSTACK_SIZE		configMINIMAL_STACK_SIZE
+#define ledSTACK_SIZE		35
 #define ledNUMBER_OF_LEDS	( 1 )
 #define ledFLASH_RATE_BASE	( ( TickType_t ) 500 )
 

@@ -153,22 +153,20 @@ int main( void )
 	prvSetupHardware();                                                                                                                                                                           
 	vParTestInitialise();
 	Init_PWM();
+	
 	if ((xEventGroup = xEventGroupCreate()) != NULL)
 	{
 		/* Start the standard demo application tasks. */
 		vStartLEDFlashTasks( mainLED_TASK_PRIORITY );
 		//xTaskCreate( vCommTask, "nRF", configMINIMAL_STACK_SIZE*2, NULL, mainComm_TASK_PRIORITY, ( TaskHandle_t * ) NULL );
-		//xTaskCreate( vMPU9050Task, "mpu", configMINIMAL_STACK_SIZE*2, NULL, mainMPU_TASK_PRIORITY, ( TaskHandle_t * ) NULL );
-		xTaskCreate( vHMCTask, "hmc", configMINIMAL_STACK_SIZE*2, NULL, mainHMC_TASK_PRIORITY, ( TaskHandle_t * ) NULL );
+		xTaskCreate( vMPU9050Task, "mpu", configMINIMAL_STACK_SIZE*4, NULL, mainMPU_TASK_PRIORITY, ( TaskHandle_t * ) NULL );
+		//xTaskCreate( vHMCTask, "hmc", configMINIMAL_STACK_SIZE*2, NULL, mainHMC_TASK_PRIORITY, ( TaskHandle_t * ) NULL );
 
 		/* Start the scheduler. */
 		vTaskStartScheduler();
 	}
-	else
-	{
-		vParTestSetLED(7, 1);
-		while(1);
-	}
+	vParTestSetLED(7, 1);
+	while(1);
 
 	/* As the scheduler has been started the demo applications tasks will be
 	executing and we should never get here! */
@@ -313,6 +311,34 @@ volatile long lValue;
 	}
 }
 
+static portTASK_FUNCTION( vMPU9050Task, pvParameters )
+{
+	TickType_t xRate, xLastTime;
+	mpu9050_t mpu9050;
+
+	/* The parameters are not used. */
+	( void ) pvParameters;
+	
+	Init_MPU9050();
+	xRate = 100;
+	xRate /= portTICK_PERIOD_MS;
+	
+	/* We need to initialise xLastFlashTime prior to the first call to 
+	vTaskDelayUntil(). */
+	xLastTime = xTaskGetTickCount();
+
+	for(;;)
+	{
+		if (MPU9050_Read(&mpu9050) == pdTRUE)
+			vParTestToggleLED( 4 );
+		else
+		{
+			vTaskDelayUntil( &xLastTime, xRate );
+			vParTestToggleLED( 5 );
+		}
+	}
+}
+
 static portTASK_FUNCTION( vHMCTask, pvParameters )
 {
 	TickType_t xRate, xLastTime;
@@ -342,12 +368,12 @@ static portTASK_FUNCTION( vHMCTask, pvParameters )
 		}
 		else
 		{
-			vTaskDelayUntil(&xLastTime, xRate);
 			if (HMC_Detect() == pdTRUE)
 			{
 				HMC_Init();
 				isConnect = 0;
 			}
+			vTaskDelayUntil(&xLastTime, xRate);
 		}
 	}
 }

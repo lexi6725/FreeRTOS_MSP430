@@ -54,7 +54,7 @@ void I2C_WriteByte(uint8_t data)
 
 	I2C_SDA_IN;
 	I2C_SCL_IN;
-	while(timeout--)
+	while(timeout-->0)
 	{
 		if (!(I2C_SDA))
 			break;

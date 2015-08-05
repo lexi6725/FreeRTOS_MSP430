@@ -18,17 +18,18 @@ void Init_PWM(void)
 	TBCCR1	= CONFIG_DEFAULT_PWM_RATE%PWM_MAX_RATE;
 	TBCCR2	= CONFIG_DEFAULT_PWM_RATE%PWM_MAX_RATE;
 	TBCCR0	= PWM_MAX_RATE;						// 50uS = 20KHz
+	TBCTL	|= TBCLR;
 }
 
 void Enable_PWM(void)
 {
-	TBCTL	|= TASSEL_2+ID_3+TBCLR+MC_1;			// SMCLK/div8 and Up Mode 
+	TBCTL	|= TASSEL_2+ID_3+MC_1;			// SMCLK/div8 and Up Mode 
 	PWM_Flag = 1;
 }
 
 void Disable_PWM(void)
 {
-	TBCTL	= 0|TBCLR;
+	TBCTL	= 0;
 	PWM_Flag = 0;
 }
 
@@ -37,8 +38,8 @@ void ChangeRate(uint8_t rate)
 	if (!IsPwmRate(rate))
 		return;
 
-	TBCCR1	= rate%(PWM_MAX_RATE+1);
-	TBCCR2	= rate%(PWM_MAX_RATE+1);
+	TBCCR1	= rate;
+	TBCCR2	= rate;
 }
 
 uint8_t GetRate(void)

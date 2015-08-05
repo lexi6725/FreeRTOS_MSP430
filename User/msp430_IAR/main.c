@@ -96,21 +96,28 @@
 /* Standard includes. */
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
 
 /* Scheduler includes. */
 #include "FreeRTOS.h"
 #include "task.h"
+#include "event_groups.h"
 
 /* application includes. */
+#include "main.h"
 #include "partest.h"
 #include "flash.h"
 #include "comtest2.h"
 #include "pwm.h"
 #include "nrf24l01.h"
+#include "mpu9050.h"
+#include "hmc5883l.h"
 
 /* App task priorities. */
 #define mainLED_TASK_PRIORITY			( tskIDLE_PRIORITY + 1 )
 #define mainComm_TASK_PRIORITY			( tskIDLE_PRIORITY + 2 )
+#define mainMPU_TASK_PRIORITY			( tskIDLE_PRIORITY + 2 )
+#define mainHMC_TASK_PRIORITY			( tskIDLE_PRIORITY + 2 )
 
 /* The constants used in the calculation. */
 #define intgCONST1				( ( long ) 123 )
@@ -128,9 +135,14 @@ static void prvSetupHardware( void );
 portBASE_TYPE xLocalError = pdFALSE;
 volatile unsigned long ulIdleLoops = 0UL;
 
+/* Event Group*/
+EventGroupHandle_t xEventGroup = NULL;
+
 extern void vPortSetupTimerInterrupt( void );
 /*-----------------------------------------------------------*/
 static portTASK_FUNCTION_PROTO( vCommTask, pvParameters );
+static portTASK_FUNCTION( vMPU9050Task, pvParameters );
+static portTASK_FUNCTION( vHMCTask, pvParameters );
 
 /*
  * Start the demo application tasks - then start the real time scheduler.
@@ -141,13 +153,22 @@ int main( void )
 	prvSetupHardware();                                                                                                                                                                           
 	vParTestInitialise();
 	Init_PWM();
+	if ((xEventGroup = xEventGroupCreate()) != NULL)
+	{
+		/* Start the standard demo application tasks. */
+		vStartLEDFlashTasks( mainLED_TASK_PRIORITY );
+		//xTaskCreate( vCommTask, "nRF", configMINIMAL_STACK_SIZE*2, NULL, mainComm_TASK_PRIORITY, ( TaskHandle_t * ) NULL );
+		//xTaskCreate( vMPU9050Task, "mpu", configMINIMAL_STACK_SIZE*2, NULL, mainMPU_TASK_PRIORITY, ( TaskHandle_t * ) NULL );
+		xTaskCreate( vHMCTask, "hmc", configMINIMAL_STACK_SIZE*2, NULL, mainHMC_TASK_PRIORITY, ( TaskHandle_t * ) NULL );
 
-	/* Start the standard demo application tasks. */
-	vStartLEDFlashTasks( mainLED_TASK_PRIORITY );
-	xTaskCreate( vCommTask, "nRF", configMINIMAL_STACK_SIZE*2, NULL, mainComm_TASK_PRIORITY, ( TaskHandle_t * ) NULL );
-
-	/* Start the scheduler. */
-	vTaskStartScheduler();
+		/* Start the scheduler. */
+		vTaskStartScheduler();
+	}
+	else
+	{
+		vParTestSetLED(7, 1);
+		while(1);
+	}
 
 	/* As the scheduler has been started the demo applications tasks will be
 	executing and we should never get here! */
@@ -289,5 +310,44 @@ volatile long lValue;
 
         /* Place the processor into low power mode. */
         LPM0;
+	}
+}
+
+static portTASK_FUNCTION( vHMCTask, pvParameters )
+{
+	TickType_t xRate, xLastTime;
+	HMC_Data_t hmc_data;
+	uint8_t isConnect = 10;
+
+	/* The parameters are not used. */
+	( void ) pvParameters;
+	
+	xRate = 500;
+	xRate /= portTICK_PERIOD_MS;
+	
+	/* We need to initialise xLastFlashTime prior to the first call to 
+	vTaskDelayUntil(). */
+	xLastTime = xTaskGetTickCount();
+	
+	for(;;)
+	{
+		if (isConnect < 10)
+		{
+			if (HMC_Read(&hmc_data))
+			{
+				vParTestToggleLED(2);
+			}
+			else
+				isConnect++;
+		}
+		else
+		{
+			vTaskDelayUntil(&xLastTime, xRate);
+			if (HMC_Detect() == pdTRUE)
+			{
+				HMC_Init();
+				isConnect = 0;
+			}
+		}
 	}
 }

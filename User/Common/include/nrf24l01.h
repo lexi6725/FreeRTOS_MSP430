@@ -19,7 +19,7 @@
 /**********************************************************
 * NRF24L01寄存器地址
 ***********************************************************/
-#define CONFIG				0x00		//配置寄存器地址；
+#define RF_CONFIG				0x00		//配置寄存器地址；
 										//Bit0:1 接收模式 0发送模式Bit1: 1 PowerUp      0 PowerDown
 										//Bit2:1 CRC two byte  0 CRC one byte     Bit3: 1 Enable CRC 0 Disable CRC 
 										//Bit4: 1 Enabel IRQ 0 DisableIRQ               Bit5: 1 TX_IRQ
@@ -30,7 +30,7 @@
 #define SETUP_RETR			0x04		//建立自动重发;bit3:0,自动重发计数器;bit7:4,自动重发延时 250*x+86us
 #define RF_CH				0x05		//RF通道,bit6:0,工作通道频率;
 #define RF_SETUP			0x06		//RF寄存器;bit3:传输速率(0:1Mbps,1:2Mbps);bit2:1,发射功率;bit0:低噪声放大器增益
-#define	STATUS				0x07		//状态寄存器;bit0:TX FIFO满标志;bit3:1,接收数据通道号(最大:6);bit4,达到最多次重发
+#define	RF_STATUS				0x07		//状态寄存器;bit0:TX FIFO满标志;bit3:1,接收数据通道号(最大:6);bit4,达到最多次重发
 										//bit5:数据发送完成中断;bit6:接收数据中断;
 #define MAX_TX				0x10		//达到最大发送次数中断
 #define	TX_OK				0x20		//TX发送完成中断
@@ -66,12 +66,6 @@
 #define nRF_MISO_IN()	((P5IN>>1)&0x01)
 
 #define TIMEOUT		0x01
-
-
-/* nRF24L01 Event Bit Map */
-#define nRF_State_TX_OK		(0x01<<1)		// 1. 发送数据成功
-#define nRF_State_TX_MAX	(0x01<<2)		// 1. 发送数据最大次数
-#define nRF_State_RX_OK		(0x01<<3)		// 1. 接收数据成功
 
 
 void nRF_Init(void);

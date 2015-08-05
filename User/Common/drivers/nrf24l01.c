@@ -3,10 +3,11 @@
 #include "event_groups.h"
 #include "portmacro.h"
 #include "nrf24l01.h"
+#include "main.h"
 
+extern EventGroupHandle_t xEventGroup;
 static uint8_t nRF_Address[nRF_ADDR_WIDTH] = {0x59, 0x12, 0x67, 0x67, 0x25};
 static uint8_t nRF_Init_Flag = 0;
-EventGroupHandle_t xEventGroup;
 #define HW_SPI
 
 void nRF_Init(void)
@@ -43,8 +44,7 @@ void nRF_Init(void)
 	nRF_CE_0;
 	nRF_CSN_1;
 
-	if ((xEventGroup = xEventGroupCreate()) != NULL)
-		nRF_Init_Flag = 1;
+	nRF_Init_Flag = 1;
 }
 
 #if !defined(HW_SPI)
@@ -158,9 +158,9 @@ void nrf_rx_mode(void)
 	nrf_rw_reg(WRITE_REG+RF_CH, 40);
 	nrf_rw_reg(WRITE_REG+RX_PW_P0, nRF_PLOAD_WIDTH);
 	nrf_rw_reg(WRITE_REG+RF_SETUP, 0x0F);
-	nrf_rw_reg(WRITE_REG+CONFIG, 0x0F);
+	nrf_rw_reg(WRITE_REG+RF_CONFIG, 0x0F);
 
-	nrf_rw_reg(WRITE_REG+STATUS, 0xFF);
+	nrf_rw_reg(WRITE_REG+RF_STATUS, 0xFF);
 	nRF_CE_1;
 }
 
@@ -181,9 +181,9 @@ void nrf_tx_mode(void)
 	nrf_rw_reg(WRITE_REG+RF_CH, 40);
 	nrf_rw_reg(WRITE_REG+RF_SETUP, 0x0F);
 	nrf_rw_reg(WRITE_REG+RX_PW_P0, nRF_PLOAD_WIDTH);
-	nrf_rw_reg(WRITE_REG+CONFIG, 0x0E);
+	nrf_rw_reg(WRITE_REG+RF_CONFIG, 0x0E);
 	
-	nrf_rw_reg(WRITE_REG+STATUS, 0xFF);
+	nrf_rw_reg(WRITE_REG+RF_STATUS, 0xFF);
 	/*!< Deselect the nRF: Chip Select high */
 	nRF_CE_1;
 }
@@ -192,7 +192,7 @@ uint8_t nrf_start_tx(uint8_t *pbuf, uint8_t len)
 {
 	uint8_t retvalue = 0;
 	BaseType_t uxBits;
-	const TickType_t xTicksToWait = 3;
+	const TickType_t xTicksToWait = 5;
 
 	nrf_tx_mode();
 	
@@ -218,7 +218,7 @@ uint8_t nrf_start_tx(uint8_t *pbuf, uint8_t len)
 	nrf_rw_reg(FLUSH_TX, 0xff);
 	nRF_CE_1;
 	
-	nrf_rx_mode();
+	//nrf_rx_mode();
 	
 	return retvalue;
 }
@@ -242,7 +242,7 @@ uint8_t nrf_start_rx(uint8_t *pbuf, uint8_t len)
 		retvalue = TIMEOUT;
 
 	nRF_CE_0;
-	nrf_rw_reg(WRITE_REG+STATUS, 0xFF);
+	nrf_rw_reg(WRITE_REG+RF_STATUS, 0xFF);
 	nRF_CE_1;
 
 	return retvalue;
@@ -253,8 +253,8 @@ void nrf_isr(void)
 	BaseType_t xResult, xHigherPriorityTaskWoken;
 	uint8_t RegValue;
 
-	RegValue = nrf_read_byte(STATUS);
-	nrf_rw_reg(WRITE_REG+STATUS, 0xff);
+	RegValue = nrf_read_byte(RF_STATUS);
+	nrf_rw_reg(WRITE_REG+RF_STATUS, 0xff);
 
 	xHigherPriorityTaskWoken = pdFALSE;
 
@@ -275,13 +275,4 @@ void nrf_isr(void)
 	{
 		portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
 	}
-}
-
-#pragma vector=PORT1_VECTOR
-__interrupt void Port1_ISR(void)
-{
-	if (P1IFG & BIT4)
-		nrf_isr();
-
-	P1IFG = 0;
 }

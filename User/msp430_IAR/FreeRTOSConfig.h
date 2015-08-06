@@ -100,7 +100,7 @@ ever get saved twice, but imposes an overhead on the occasions that no context s
 occurs.
 */
 
-#define configINTERRUPT_EXAMPLE_METHOD 1
+#define configINTERRUPT_EXAMPLE_METHOD 2
 
 /*-----------------------------------------------------------
  * Application specific definitions.
@@ -117,10 +117,10 @@ occurs.
 #define configUSE_PREEMPTION		1
 #define configUSE_IDLE_HOOK			1
 #define configUSE_TICK_HOOK			0
-#define configCPU_CLOCK_HZ			( ( unsigned long ) 8000000 ) /* Clock setup from main.c in the demo application. */
+#define configCPU_CLOCK_HZ			( ( unsigned long ) (0x01<<23) ) /* Clock setup from main.c in the demo application. */
 #define configTICK_RATE_HZ			( ( TickType_t ) 1000 )
 #define configMAX_PRIORITIES		( 4 )
-#define configMINIMAL_STACK_SIZE	( ( unsigned short ) 40 )
+#define configMINIMAL_STACK_SIZE	( ( unsigned short ) 35 )
 #define configTOTAL_HEAP_SIZE		( ( size_t ) ( 1500 ) )
 #define configMAX_TASK_NAME_LEN		( 8 )
 #define configUSE_TRACE_FACILITY	0
@@ -136,7 +136,7 @@ occurs.
 #define configUSE_TIMERS				1
 #define configTIMER_TASK_PRIORITY		( 2 )
 #define configTIMER_QUEUE_LENGTH		10
-#define configTIMER_TASK_STACK_DEPTH	( configMINIMAL_STACK_SIZE )
+#define configTIMER_TASK_STACK_DEPTH	( configMINIMAL_STACK_SIZE*2 )
 
 /* Set the following definitions to 1 to include the API function, or zero
 to exclude the API function. */

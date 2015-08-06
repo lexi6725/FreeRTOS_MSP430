@@ -19,7 +19,6 @@ void I2C_Start(void)
 {
 	I2C_SDA_IN;
 	I2C_SCL_IN;
-	Delay(1);
 	I2C_SDA_OUT;
 	Delay(1);
 	I2C_SCL_OUT;
@@ -31,7 +30,6 @@ void I2C_Stop(void)
 	I2C_SCL_IN;
 	Delay(1);
 	I2C_SDA_IN;
-	Delay(1);
 }
 
 void I2C_WriteByte(uint8_t data)

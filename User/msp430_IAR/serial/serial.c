@@ -85,13 +85,13 @@
 #include "serial.h"
 
 /* Constants required to setup the hardware. */
-#define serTX_AND_RX			( ( unsigned char ) 0x03 )
+#define serTX_AND_RX			( ( unsigned char ) 0x30 )
 
 /* Misc. constants. */
 #define serNO_BLOCK				( ( TickType_t ) 0 )
 
 /* Enable the UART Tx interrupt. */
-#define vInterruptOn() IFG2 |= UTXIFG1
+#define vInterruptOn() IFG1 |= UTXIFG0
 
 /* The queue used to hold received characters. */
 static QueueHandle_t xRxedChars;
@@ -119,34 +119,35 @@ unsigned long ulBaudRateCount;
 		xCharsForTx = xQueueCreate( uxQueueLength, ( unsigned portBASE_TYPE ) sizeof( signed char ) );
 
 		/* Reset UART. */
-		UCTL1 |= SWRST;
+		UCTL0 |= SWRST;
 
 		/* Set pin function. */
-		P4SEL |= serTX_AND_RX;
+		P3SEL |= serTX_AND_RX;
 
 		/* All other bits remain at zero for n, 8, 1 interrupt driven operation.
 		LOOPBACK MODE!*/
-		U1CTL |= CHAR + LISTEN;
-		U1TCTL |= SSEL1;
+		U0CTL |= CHAR;
+		U0TCTL |= SSEL1;
 
 		/* Setup baud rate low byte. */
-		U1BR0 = ( unsigned char ) ( ulBaudRateCount & ( unsigned long ) 0xff );
+		U0BR0 = ( unsigned char ) ( ulBaudRateCount & ( unsigned long ) 0xff );
 
 		/* Setup baud rate high byte. */
 		ulBaudRateCount >>= 8UL;
-		U1BR1 = ( unsigned char ) ( ulBaudRateCount & ( unsigned long ) 0xff );
+		U0BR1 = ( unsigned char ) ( ulBaudRateCount & ( unsigned long ) 0xff );
 
+		U0MCTL	= 0x6B;
 		/* Enable ports. */
-		ME2 |= UTXE1 + URXE1;
+		ME1 |= UTXE0 + URXE0;
 
 		/* Set. */
-		UCTL1 &= ~SWRST;
+		UCTL0 &= ~SWRST;
 
 		/* Nothing in the buffer yet. */
 		sTHREEmpty = pdTRUE;
 
 		/* Enable interrupts. */
-		IE2 |= URXIE1 + UTXIE1;
+		IE1 |= URXIE0 + UTXIE0;
 	}
 	portEXIT_CRITICAL();
 	
@@ -186,7 +187,7 @@ signed portBASE_TYPE xReturn;
 			there are no characters queued to be transmitted - so we can
 			write the character directly to the shift Tx register. */
 			sTHREEmpty = pdFALSE;
-			U1TXBUF = cOutChar;
+			U0TXBUF = cOutChar;
 			xReturn = pdPASS;
 		}
 		else
@@ -210,7 +211,7 @@ signed portBASE_TYPE xReturn;
 				/* Get back the character we just posted. */
 				xQueueReceive( xCharsForTx, &cOutChar, serNO_BLOCK );
 				sTHREEmpty = pdFALSE;
-				U1TXBUF = cOutChar;
+				U0TXBUF = cOutChar;
 			}
 		}
 	}
@@ -289,7 +290,7 @@ signed portBASE_TYPE xReturn;
 	
 		/* Get the character from the UART and post it on the queue of Rxed
 		characters. */
-		cChar = U1RXBUF;
+		cChar = U0RXBUF;
 	
 		xQueueSendFromISR( xRxedChars, &cChar, &xHigherPriorityTaskWoken );
 
@@ -313,7 +314,7 @@ signed portBASE_TYPE xReturn;
 		if( xQueueReceiveFromISR( xCharsForTx, &cChar, &xTaskWoken ) == pdTRUE )
 		{
 			/* There was another character queued - transmit it now. */
-			U1TXBUF = cChar;
+			U0TXBUF = cChar;
 		}
 		else
 		{

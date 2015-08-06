@@ -218,7 +218,7 @@ uint8_t nrf_start_tx(uint8_t *pbuf, uint8_t len)
 	nrf_rw_reg(FLUSH_TX, 0xff);
 	nRF_CE_1;
 	
-	//nrf_rx_mode();
+	nrf_rx_mode();
 	
 	return retvalue;
 }

@@ -59,41 +59,29 @@ void HMC_ISR(void)
 uint8_t HMC_Read(HMC_Data_t *hmc_data)
 {
 	uint8_t DataBuf[6];
-	BaseType_t uxBits = 0;
-	const TickType_t xTickToWait = 100;
 	float tmp, r;
 
-	uxBits = xEventGroupWaitBits(xEventGroup, HMC_DATA_READY, pdTRUE, pdFALSE, xTickToWait);
+	I2C_Read(HMC_SLV_ADDR, DOUT_X_MSB, DataBuf, 6);
 
-	if (uxBits & HMC_DATA_READY)
-	{
-		I2C_Read(HMC_SLV_ADDR, DOUT_X_MSB, DataBuf, 6);
+	hmc_data->direct.x = (DataBuf[0] << 8 | DataBuf[1]);
+	hmc_data->direct.y = (DataBuf[2] << 8 | DataBuf[3]);
+	hmc_data->direct.z = (DataBuf[4] << 8 | DataBuf[5]);
 
-		hmc_data->direct.x = (DataBuf[0] << 8 | DataBuf[1]);
-		hmc_data->direct.y = (DataBuf[2] << 8 | DataBuf[3]);
-		hmc_data->direct.z = (DataBuf[4] << 8 | DataBuf[5]);
+	r = sqrt((double)hmc_data->direct.x*(double)hmc_data->direct.x
+			+(double)hmc_data->direct.y*(double)hmc_data->direct.y
+			+(double)hmc_data->direct.z*(double)hmc_data->direct.z);
 
-		r = sqrt((double)hmc_data->direct.x*(double)hmc_data->direct.x
-				+(double)hmc_data->direct.y*(double)hmc_data->direct.y
-				+(double)hmc_data->direct.z*(double)hmc_data->direct.z);
+	tmp = (double)hmc_data->direct.x/r;
+	tmp = acos(tmp);
+	hmc_data->angle.x = tmp*180.0/3.1415926;
+	
+	tmp = (double)hmc_data->direct.y/r;
+	tmp = acos(tmp);
+	hmc_data->angle.y = tmp*180.0/3.1415926;
+	
+	tmp = (double)hmc_data->direct.z/r;
+	tmp = acos(tmp);
+	hmc_data->angle.z = tmp*180.0/3.1415926;
 
-		tmp = (double)hmc_data->direct.x/r;
-		tmp = acos(tmp);
-		hmc_data->angle.x = tmp*180.0/3.1415926;
-		
-		tmp = (double)hmc_data->direct.y/r;
-		tmp = acos(tmp);
-		hmc_data->angle.y = tmp*180.0/3.1415926;
-		
-		tmp = (double)hmc_data->direct.z/r;
-		tmp = acos(tmp);
-		hmc_data->angle.z = tmp*180.0/3.1415926;
-
-		return pdTRUE;
-	}
-
-	return pdFALSE;
-
+	return pdTRUE;
 }
-
-

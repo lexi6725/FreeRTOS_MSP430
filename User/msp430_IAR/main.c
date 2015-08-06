@@ -117,7 +117,6 @@
 #define mainLED_TASK_PRIORITY			( tskIDLE_PRIORITY + 1 )
 #define mainComm_TASK_PRIORITY			( tskIDLE_PRIORITY + 2 )
 #define mainMPU_TASK_PRIORITY			( tskIDLE_PRIORITY + 2 )
-#define mainHMC_TASK_PRIORITY			( tskIDLE_PRIORITY + 2 )
 
 /* The constants used in the calculation. */
 #define intgCONST1				( ( long ) 123 )
@@ -141,8 +140,7 @@ EventGroupHandle_t xEventGroup = NULL;
 extern void vPortSetupTimerInterrupt( void );
 /*-----------------------------------------------------------*/
 static portTASK_FUNCTION_PROTO( vCommTask, pvParameters );
-static portTASK_FUNCTION( vMPU9050Task, pvParameters );
-static portTASK_FUNCTION( vHMCTask, pvParameters );
+static portTASK_FUNCTION( vMPDTask, pvParameters );
 
 /*
  * Start the demo application tasks - then start the real time scheduler.
@@ -158,9 +156,8 @@ int main( void )
 	{
 		/* Start the standard demo application tasks. */
 		vStartLEDFlashTasks( mainLED_TASK_PRIORITY );
-		//xTaskCreate( vCommTask, "nRF", configMINIMAL_STACK_SIZE*2, NULL, mainComm_TASK_PRIORITY, ( TaskHandle_t * ) NULL );
-		xTaskCreate( vMPU9050Task, "mpu", configMINIMAL_STACK_SIZE*4, NULL, mainMPU_TASK_PRIORITY, ( TaskHandle_t * ) NULL );
-		//xTaskCreate( vHMCTask, "hmc", configMINIMAL_STACK_SIZE*2, NULL, mainHMC_TASK_PRIORITY, ( TaskHandle_t * ) NULL );
+		xTaskCreate( vCommTask, "nRF", configMINIMAL_STACK_SIZE*3, NULL, mainComm_TASK_PRIORITY, ( TaskHandle_t * ) NULL );
+		xTaskCreate( vMPDTask, "mpu", configMINIMAL_STACK_SIZE*3, NULL, mainMPU_TASK_PRIORITY, ( TaskHandle_t * ) NULL );
 
 		/* Start the scheduler. */
 		vTaskStartScheduler();
@@ -223,11 +220,11 @@ static portTASK_FUNCTION( vCommTask, pvParameters )
 	{
 		if (nrf_start_rx(buf, nRF_PLOAD_WIDTH) == RX_OK)
 		{
-			vParTestToggleLED(3);
+			vParTestToggleLED(6);
 			CommProcess(buf);
 			buf[0] |= 0x80;
 			nrf_start_tx(buf, nRF_PLOAD_WIDTH);
-			vParTestToggleLED(3);
+			vParTestToggleLED(6);
 		}
 		memset(buf, 0, nRF_PLOAD_WIDTH);
 	}
@@ -311,15 +308,20 @@ volatile long lValue;
 	}
 }
 
-static portTASK_FUNCTION( vMPU9050Task, pvParameters )
+static portTASK_FUNCTION( vMPDTask, pvParameters )
 {
 	TickType_t xRate, xLastTime;
 	mpu9050_t mpu9050;
+	HMC_Data_t hmc_data;
+	BaseType_t uxBits = 0;
+	const TickType_t xTickToWait = 100;
+	//uint8_t counter[2] = {0, 0};
 
 	/* The parameters are not used. */
 	( void ) pvParameters;
 	
 	Init_MPU9050();
+	HMC_Init();
 	xRate = 100;
 	xRate /= portTICK_PERIOD_MS;
 	
@@ -329,51 +331,41 @@ static portTASK_FUNCTION( vMPU9050Task, pvParameters )
 
 	for(;;)
 	{
-		if (MPU9050_Read(&mpu9050) == pdTRUE)
-			vParTestToggleLED( 4 );
-		else
-		{
-			vTaskDelayUntil( &xLastTime, xRate );
-			vParTestToggleLED( 5 );
-		}
-	}
-}
+		uxBits = xEventGroupWaitBits(xEventGroup, MPU_DATA_READY|HMC_DATA_READY, pdTRUE, pdFALSE, xTickToWait);
 
-static portTASK_FUNCTION( vHMCTask, pvParameters )
-{
-	TickType_t xRate, xLastTime;
-	HMC_Data_t hmc_data;
-	uint8_t isConnect = 10;
-
-	/* The parameters are not used. */
-	( void ) pvParameters;
-	
-	xRate = 500;
-	xRate /= portTICK_PERIOD_MS;
-	
-	/* We need to initialise xLastFlashTime prior to the first call to 
-	vTaskDelayUntil(). */
-	xLastTime = xTaskGetTickCount();
-	
-	for(;;)
-	{
-		if (isConnect < 10)
+		if (uxBits & MPU_DATA_READY)
 		{
-			if (HMC_Read(&hmc_data))
+			MPU9050_Read(&mpu9050);
+			vParTestSetLED( 4, 1);
+			vParTestSetLED( 5, 0);
+			/*if (counter[0]++ > 50)
 			{
-				vParTestToggleLED(2);
-			}
-			else
-				isConnect++;
+				printf("MPU:\nACCEL:\t");
+				printf("x=%d\ty=%d\tz=%d\n", mpu9050.accel.x, mpu9050.accel.y, mpu9050.accel.z);
+				printf("GYRO: x=%d\ty=%d\tz=%d\n", mpu9050.gyro.x, mpu9050.gyro.y, mpu9050.gyro.z);
+				counter[0] = 0;
+			}*/
 		}
-		else
+		if (uxBits & HMC_DATA_READY)
 		{
-			if (HMC_Detect() == pdTRUE)
+			HMC_Read(&hmc_data);
+			vParTestSetLED(2, 1);
+			vParTestSetLED(3, 0);
+			/*if (counter[1]++ > 4)
 			{
-				HMC_Init();
-				isConnect = 0;
-			}
+				printf("HMC:\tDirect: x=%d\ty=%d\tz=%d\n", hmc_data.direct.x, hmc_data.direct.y, hmc_data.direct.z);
+				printf("\tAngle: x=%.2f\ty=%.2f\tz=%.2f\n", hmc_data.angle.x, hmc_data.angle.x, hmc_data.angle.x);
+				counter[1] = 0;
+			}*/
+		}
+		if (!(uxBits & (MPU_DATA_READY|HMC_DATA_READY)))
+		{
+			vParTestSetLED(2, 0);
+			vParTestSetLED(3, 1);
+			vParTestSetLED( 4, 0);
+			vParTestSetLED( 5, 1);
 			vTaskDelayUntil(&xLastTime, xRate);
+			//printf("\n#########Error##########\n\n");
 		}
 	}
 }

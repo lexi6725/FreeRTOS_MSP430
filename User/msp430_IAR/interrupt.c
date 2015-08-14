@@ -2,6 +2,7 @@
 #include "nrf24l01.h"
 #include "hmc5883l.h"
 #include "mpu9050.h"
+#include "pwm.h"
 
 #pragma vector=PORT1_VECTOR
 __interrupt void Port1_ISR(void)
@@ -16,3 +17,15 @@ __interrupt void Port1_ISR(void)
 	P1IFG = 0;
 }
 
+extern void vTickISR(void);
+#pragma vector=TIMERA0_VECTOR
+__interrupt void TimerA0_ISR(void)
+{
+	vTickISR();
+}
+
+#pragma vector=TIMERB0_VECTOR
+__interrupt void TimerB0_ISR(void)
+{
+	TimerB_ISR();
+}

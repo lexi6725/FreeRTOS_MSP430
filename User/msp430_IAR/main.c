@@ -116,7 +116,7 @@
 /* App task priorities. */
 #define mainLED_TASK_PRIORITY			( tskIDLE_PRIORITY + 1 )
 #define mainComm_TASK_PRIORITY			( tskIDLE_PRIORITY + 2 )
-#define mainMPU_TASK_PRIORITY			( tskIDLE_PRIORITY + 2 )
+#define mainMPU_TASK_PRIORITY			( tskIDLE_PRIORITY + 3 )
 
 /* The constants used in the calculation. */
 #define intgCONST1				( ( long ) 123 )
@@ -369,3 +369,25 @@ static portTASK_FUNCTION( vMPDTask, pvParameters )
 		}
 	}
 }
+
+#if 0
+int fputc(int ch, FILE *f)
+{
+	
+	xSerialPutChar(0, ch, 0);
+	return ch;
+}
+
+int GetKey(void)
+{
+	int ch = 0;
+	xSerialGetChar(0, &ch, 0);
+	return ch;
+}
+#endif
+/*
+void Delay(uint16_t us)
+{
+	while(us--)
+		__delay_cycles((long)8);
+}*/

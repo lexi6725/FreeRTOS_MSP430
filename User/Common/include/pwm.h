@@ -62,5 +62,9 @@
 void Init_PWM(void);
 void ChangeRate(uint8_t rate);
 void ControlProcess(uint8_t cmd);
+void TimerStart(void);
+void TimerStop(void);
+uint16_t GetTmrTick(void);
+void TimerB_ISR(void);
 
 #endif
